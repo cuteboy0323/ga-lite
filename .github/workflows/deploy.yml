@@ -1,0 +1,23 @@
+name: Deploy to NPM
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  test:
+    name: Run tests and deploy
+    runs-on: ubuntu-latest
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > .npmrc
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16"
+          cache: "yarn"
+      - run: yarn install --prefer-offline --frozen-lockfile
+      - run: yarn run lint
+      - run: yarn run build
+      - run: yarn run test
+      - run: npm publish
